@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matriz</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2 class="h2cus">Matriz</h2>
+<table id="matrix"></table>
+<div id="consoleContainer">
+  <div id="consoleOutput"></div> <!-- Div para mostrar los mensajes -->
+</div>
+<div class="dado" id="randomNumbers">
+    <p>Producción: <span id="produccionValue"></span></p>
+    <p>Consumo: <span id="consumoValue"></span></p>
+  </div>
+<button class="button-12" role="button" onclick="cambiarYSimular()">ROLL</button> <!-- Botón para correr el consumidor o el productor -->
+
+<script>
+// Modificadores
+let modifficX = 'X';
+let modifficO = 'O';
+
+// Punteros
+let productor = { fila: 0, columna: 0 };
+let consumidor = { fila: 0, columna: 0 };
+
+// Semaforo
+let semaforoPro = 0;
+
+// Contador para cantidad de produccion
+let producir = 0;
+let consumir = 0;
+
+//Contador de disponibilidad
+let disp = 0;
+let aux1 = 0;
+
+// Matriz
+let matrix = [
+    ['O', 'O', 'O', 'O', 'O'],
+    ['O', 'O', 'O', 'O', 'O'],
+    ['O', 'O', 'O', 'O', 'O'],
+    ['O', 'O', 'O', 'O', 'O'],
+    ['O', 'O', 'O', 'O', 'O'],
+];
+
+// Función para crear la tabla
+function createTable(matrix) {
+  const table = document.getElementById('matrix');
+  // Limpiar la tabla antes de actualizarla
+  table.innerHTML = '';
+  for (let i = 0; i < matrix.length; i++) {
+    const row = document.createElement('tr');
+    for (let j = 0; j < matrix[i].length; j++) {
+      const cell = document.createElement('td');
+      cell.textContent = matrix[i][j];
+      row.appendChild(cell);
+    }
+    table.appendChild(row);
+  }
+}
+
+// Función para mostrar mensajes
+function logAndPrint(message) {
+  const consoleOutput = document.getElementById('consoleOutput');
+  consoleOutput.innerHTML = ""; // Limpiar el contenido antes de agregar un nuevo mensaje
+  consoleOutput.textContent = message + '\n'; // Agregar el nuevo mensaje
+}
+
+// Función para mostrar mensajes de entrada y salida del productor
+function logProductor(message) {
+  logAndPrint(`Productor ${message}`);
+}
+
+// Función para mostrar mensajes de entrada y salida del consumidor
+function logConsumidor(message) {
+  logAndPrint(`Consumidor ${message}`);
+}
+
+function EntraProductor(matrix) {
+    aux1 += producir; 
+    if (semaforoPro === 1 && 25 >= aux1) {
+        logProductor('entró');
+        let count = 0;
+        let startRow = productor.fila;
+        let startColumn = productor.columna;
+
+        // Recorremos la matriz desde el último punto de producción
+        for (let i = startRow; i < matrix.length && count < producir; i++) {
+            for (let j = (i === startRow ? startColumn : 0); j < matrix[i].length && count < producir; j++) {
+                if (matrix[i][j] === 'O') {
+                    matrix[i][j] = modifficX;
+                    disp++;
+                    count++;
+                    // Si llegamos al final de la matriz, reiniciamos desde el principio
+                    if (i === 4 && j === 4) {
+                        productor.fila = 0;
+                        productor.columna = 0;
+                        i=0;
+                        j=-1;
+                    }else{
+                    // Actualizamos el punto de inicio para la próxima iteración
+                    productor.fila = i;
+                    productor.columna = j;
+                    }
+                }
+            }
+            // volvemos al inicio de la siguiente fila
+            startColumn = 0;      
+        }
+        semaforoPro = 0;
+        createTable(matrix);
+    } else {
+        logAndPrint('El productor no pudo entrar porque no existe espacio para producir');
+        aux1 -= producir;
+    }
+}
+
+function EntraConsumidor(matrix) {
+    if (semaforoPro === 2 && consumir <= disp) {
+        logConsumidor('entró');
+        let count = 0;
+        let startRow = consumidor.fila;
+        let startColumn = consumidor.columna;
+
+        // Recorremos la matriz desde el último punto de producción
+        
+        for (let i = startRow; i < matrix.length && count < consumir; i++) {
+            for (let j = (i === startRow ? startColumn : 0); j < matrix[i].length && count < consumir; j++) {
+                if (matrix[i][j] === 'X') {
+                    matrix[i][j] = modifficO;
+                    disp--;
+                    count++;
+                     // Si llegamos al final de la matriz y no se cambiaron todas las 'O', reiniciamos desde el principio
+                     if (i === 4 && j === 4) {
+                        consumidor.fila = 0;
+                        consumidor.columna = 0;
+                        i=0;
+                        j=-1;
+                    }else{
+                    // Actualizamos el punto de inicio para la próxima iteración
+                    consumidor.fila = i;
+                    consumidor.columna = j;
+                    }
+                }
+            }
+            // Si llegamos al final de la fila, volvemos al inicio de la siguiente fila
+            startColumn = 0;
+        }
+
+    semaforoPro = 0; // Desactivamos el semáforo después de la producción
+       aux1 -= consumir;
+       createTable(matrix); // Actualizamos la tabla
+    } else {
+        logAndPrint('El consumidor no pudo entrar porque no existe la disponibilidad para consumir');
+    }
+}
+
+// Función para mostrar mensaje de salida del productor
+function saleProductor() {
+    logProductor('salió');
+}
+
+// Función para mostrar mensaje de salida del consumidor
+function saleConsumidor() {
+    logConsumidor('salió');
+}
+
+// Función para cambiar el semáforo
+function cambiarYSimular() {
+    const boton = document.querySelector('button'); // Obtener el botón
+    boton.disabled = true; // Deshabilitar el botón
+
+    semaforoPro = Math.floor(Math.random() * 2) + 1; // Generar un número aleatorio entre 1 y 2
+    if (semaforoPro === 1) {
+        producir = Math.floor(Math.random() * 5) + 1; // Generar un número aleatorio entre 5 y 2
+        document.getElementById("produccionValue").textContent = producir;
+        document.getElementById("consumoValue").textContent = '';
+        EntraProductor(matrix);
+        setTimeout(saleProductor, 2000); // Espera 2 segundos antes de mostrar que el productor sale
+    } else {
+        consumir = Math.floor(Math.random() * 5) + 1; // Generar un número aleatorio entre 5 y 2
+        document.getElementById("consumoValue").textContent = consumir;
+        document.getElementById("produccionValue").textContent = '';
+        EntraConsumidor(matrix);
+        setTimeout(saleConsumidor, 2000); // Espera 2 segundos antes de mostrar que el consumidor sale
+    }
+
+    // Habilitar el botón 
+    setTimeout(function() {
+        boton.disabled = false;
+    }, 2000);
+}
+
+// Crear la tabla al cargar la página
+window.onload = function() {
+  createTable(matrix);
+};
+
+
+// detectar la tecla "Escape"
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") {
+    // Finalizar el programa
+    logAndPrint('Programa finalizado por la tecla escape');
+    const boton = document.querySelector('button'); // Obtener el botón
+    boton.disabled = true; // Deshabilitar el botón
+  }
+});
+
+
+
+
+</script>
+
+</body>
+</html>
