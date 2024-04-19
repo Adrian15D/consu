@@ -15,10 +15,9 @@
   <div id="consoleOutput"></div> <!-- Div para mostrar los mensajes -->
 </div>
 <div class="dado" id="randomNumbers">
-    <p>Producción: <span id="produccionValue"></span></p>
-    <p>Consumo: <span id="consumoValue"></span></p>
+  <p class="green">Producción: <span id="produccionValue" class="green"></span></p>
+  <p class="red">Consumo: <span id="consumoValue" class="red"></span></p>
   </div>
-<button class="button-12" role="button" onclick="cambiarYSimular()">ROLL</button> <!-- Botón para correr el consumidor o el productor -->
 
 <script>
 // Modificadores
@@ -82,6 +81,14 @@ function logConsumidor(message) {
   logAndPrint(`Consumidor ${message}`);
 }
 
+function saleProductor() {
+    logProductor('salió');
+}
+
+function saleConsumidor() {
+    logConsumidor('salió');
+}
+
 function EntraProductor(matrix) {
     aux1 += producir; 
     if (semaforoPro === 1 && 25 >= aux1) {
@@ -113,7 +120,6 @@ function EntraProductor(matrix) {
             // volvemos al inicio de la siguiente fila
             startColumn = 0;      
         }
-        semaforoPro = 0;
         createTable(matrix);
     } else {
         logAndPrint('El productor no pudo entrar porque no existe espacio para producir');
@@ -152,8 +158,6 @@ function EntraConsumidor(matrix) {
             // Si llegamos al final de la fila, volvemos al inicio de la siguiente fila
             startColumn = 0;
         }
-
-    semaforoPro = 0; // Desactivamos el semáforo después de la producción
        aux1 -= consumir;
        createTable(matrix); // Actualizamos la tabla
     } else {
@@ -161,45 +165,32 @@ function EntraConsumidor(matrix) {
     }
 }
 
-// Función para mostrar mensaje de salida del productor
-function saleProductor() {
-    logProductor('salió');
-}
-
-// Función para mostrar mensaje de salida del consumidor
-function saleConsumidor() {
-    logConsumidor('salió');
-}
-
 // Función para cambiar el semáforo
 function cambiarYSimular() {
-    const boton = document.querySelector('button'); // Obtener el botón
-    boton.disabled = true; // Deshabilitar el botón
-
-    semaforoPro = Math.floor(Math.random() * 2) + 1; // Generar un número aleatorio entre 1 y 2
+  if(semaforoPro === 3){
+    logAndPrint('Programa finalizado por la tecla escape');
+  }else{
+     semaforoPro = Math.floor(Math.random() * 2) + 1; // Generar un número aleatorio entre 1 y 2
     if (semaforoPro === 1) {
         producir = Math.floor(Math.random() * 5) + 1; // Generar un número aleatorio entre 5 y 2
         document.getElementById("produccionValue").textContent = producir;
         document.getElementById("consumoValue").textContent = '';
         EntraProductor(matrix);
         setTimeout(saleProductor, 2000); // Espera 2 segundos antes de mostrar que el productor sale
-    } else {
+    } else if (semaforoPro === 2){
         consumir = Math.floor(Math.random() * 5) + 1; // Generar un número aleatorio entre 5 y 2
         document.getElementById("consumoValue").textContent = consumir;
         document.getElementById("produccionValue").textContent = '';
         EntraConsumidor(matrix);
         setTimeout(saleConsumidor, 2000); // Espera 2 segundos antes de mostrar que el consumidor sale
     }
-
-    // Habilitar el botón 
-    setTimeout(function() {
-        boton.disabled = false;
-    }, 2000);
+  }
 }
 
 // Crear la tabla al cargar la página
 window.onload = function() {
   createTable(matrix);
+  setInterval(cambiarYSimular, 4000); // Ejecutar la simulación cada 4 segundos (4000 milisegundos)
 };
 
 
@@ -207,14 +198,9 @@ window.onload = function() {
 document.addEventListener("keydown", function(event) {
   if (event.key === "Escape") {
     // Finalizar el programa
-    logAndPrint('Programa finalizado por la tecla escape');
-    const boton = document.querySelector('button'); // Obtener el botón
-    boton.disabled = true; // Deshabilitar el botón
+    semaforoPro = 3;
   }
 });
-
-
-
 
 </script>
 
