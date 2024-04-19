@@ -81,4 +81,12 @@ td {
     /* Centrar horizontalmente */
     margin: 0 auto;
   }
-  
+
+  .green {
+    color: green;
+}
+
+/* Estilos para el texto del consumidor (rojo) */
+.red {
+    color: red;
+}
